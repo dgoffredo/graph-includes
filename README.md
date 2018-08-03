@@ -30,6 +30,12 @@ $ raco pkg install
 
 More
 ----
-Here's an `svg` rendering of the output for Lua's source code (might want to
-"Open image in new tab"):
-![lua #include dependnecy graph](examples/lua.svg)
+Here's an `svg` rendering of the output for [Lua's source code][lua] (might
+want to "Open image in new tab"):
+![lua #include dependency graph](examples/lua.svg)
+
+Here's a rendering of a [smaller project][ipc]:
+![ipc #include dependency graph](examples/ipc.svg)
+
+[lua]: https://github.com/lua/lua
+[ipc]: https://github.com/dgoffredo/ipc
