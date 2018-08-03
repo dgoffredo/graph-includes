@@ -2,7 +2,8 @@
 
 (provide minimal-lex)
 
-(require racket/generator)
+(require racket/generator
+         threading)
 
 (define (debug . args)
   (displayln (apply ~s args)  (current-error-port)))
@@ -13,7 +14,11 @@
 
 (define (get-single-quoted-string in)
   (and (equal? (peek-char in) #\')
-       (cons 'string (cdr (regexp-match #px"'((?:[^']|\\')*)'" in)))))
+       (~>> in 
+         (regexp-match #px"'((?:[^']|\\')*)'") ; match /'thing'/
+         second                                ; #"thing"
+         bytes->string/utf-8                   ; "thing"
+         (cons 'string))))                     ; '(string . "thing")
 
 (define (get-string in)
   (or (get-double-quoted-string in)
