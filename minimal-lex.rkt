@@ -5,9 +5,6 @@
 (require racket/generator
          threading)
 
-(define (debug . args)
-  (displayln (apply ~s args)  (current-error-port)))
-
 (define (get-double-quoted-string in)
   (and (equal? (peek-char in) #\")
        (cons 'string (read in))))
