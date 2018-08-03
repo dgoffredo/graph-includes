@@ -5,7 +5,7 @@ SOURCES = $(shell find . -type f -name '*.rkt')
 
 $(BUILD_DIR)/bin/$(LIBRARY): $(SOURCES)
 	mkdir -p $(BUILD_DIR)
-	raco exe -o $(BUILD_DIR)/$(LIBRARY) info.rkt
+	raco exe -o $(BUILD_DIR)/$(LIBRARY) main.rkt
 	raco distribute $(BUILD_DIR) $(BUILD_DIR)/$(LIBRARY)
 	rm $(BUILD_DIR)/$(LIBRARY)
 
