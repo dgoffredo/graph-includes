@@ -5,21 +5,19 @@
 (require racket/generator
          threading)
 
-(define (get-double-quoted-string in)
-  (and (equal? (peek-char in) #\")
-       (cons 'string (read in))))
-
-(define (get-single-quoted-string in)
-  (and (equal? (peek-char in) #\')
-       (~>> in 
-         (regexp-match #px"'((?:[^']|\\')*?)'") ; match /'thing'/
-         second                                 ; #"thing"
-         bytes->string/utf-8                    ; "thing"
-         (cons 'string))))                      ; '(string . "thing")
+(define (get-quoted-string in quote-char)
+ (and (equal? (peek-char in) quote-char)
+      (let ([pattern 
+             (~a quote-char "((?:\\\\.|[^" quote-char "\\\\])*)" quote-char)])
+        (~>> in
+          (regexp-match pattern) ; match /'thing'/ or maybe /"thing"/
+          second                 ; get what's inside the quotes
+          bytes->string/utf-8    ; convert to string (from raw bytes)
+          (cons 'string)))))     ; tag with 'string, e.g. '(string . "thing")
 
 (define (get-string in)
-  (or (get-double-quoted-string in)
-      (get-single-quoted-string in)))
+  (or (get-quoted-string in #\")
+      (get-quoted-string in #\')))
 
 (define (get-line-comment in)
   (and (equal? (peek-string 2 0 in) "//")
