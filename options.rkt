@@ -14,7 +14,7 @@
     #:argv argv
     #:multi
     [("-e" "--extension") EXTENSION 
-                          "Consider files with /README/i stems only"
+                          "Consider files with the extension"
                          (extensions (cons EXTENSION (extensions)))]
     #:args paths
     (options 
