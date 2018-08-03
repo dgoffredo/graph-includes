@@ -12,10 +12,10 @@
 (define (get-single-quoted-string in)
   (and (equal? (peek-char in) #\')
        (~>> in 
-         (regexp-match #px"'((?:[^']|\\')*)'") ; match /'thing'/
-         second                                ; #"thing"
-         bytes->string/utf-8                   ; "thing"
-         (cons 'string))))                     ; '(string . "thing")
+         (regexp-match #px"'((?:[^']|\\')*?)'") ; match /'thing'/
+         second                                 ; #"thing"
+         bytes->string/utf-8                    ; "thing"
+         (cons 'string))))                      ; '(string . "thing")
 
 (define (get-string in)
   (or (get-double-quoted-string in)
