@@ -1,23 +1,39 @@
-#lang racket
+#lang at-exp racket
 
 (provide minimal-lex)
 
 (require racket/generator
          threading)
 
-(define (get-quoted-string in quote-char)
- (and (equal? (peek-char in) quote-char)
-      (let ([pattern 
-             (~a quote-char "((?:\\\\.|[^" quote-char "\\\\])*)" quote-char)])
-        (~>> in
-          (regexp-match pattern) ; match /'thing'/ or maybe /"thing"/
-          second                 ; get what's inside the quotes
-          bytes->string/utf-8    ; convert to string (from raw bytes)
-          (cons 'string)))))     ; tag with 'string, e.g. '(string . "thing")
+(define (px . args)
+  ; This function is meant to be used with @ reader notation, so that
+  ;
+  ;     @px{This "has" @3 args}
+  ;
+  ; reads as
+  ;
+  ;     (pregexp (~a "This \"has\" " 3 " args"))
+  ;
+  (pregexp (apply ~a args)))
+
+(define (quoted-string-getter quote-char)
+  ; Note on the regex: A quoted string begins with a quote and ends with a
+  ; quote, and inside there are zero or more of either a character preceded by
+  ; a backslash (escaped character), or a non-quote, non-backslash character.
+  (let ([regex @px{^@|quote-char|((?:\\.|[^@|quote-char|\\])*)@|quote-char|}])
+    (lambda (in)
+      (match (regexp-try-match regex in)
+        [#f #f]
+        [(list _ inside)
+         (~>> inside bytes->string/utf-8 (cons 'string))]))))
+    
+(define get-single-quoted-string (quoted-string-getter #\'))
+
+(define get-double-quoted-string (quoted-string-getter #\"))
 
 (define (get-string in)
-  (or (get-quoted-string in #\")
-      (get-quoted-string in #\')))
+  (or (get-single-quoted-string in)
+      (get-double-quoted-string in)))
 
 (define (get-line-comment in)
   (and (equal? (peek-string 2 0 in) "//")
@@ -28,9 +44,10 @@
        (cons 'comment (car (regexp-match #px"/\\*.*?\\*/" in)))))
 
 (define (get-token in)
-  (match (regexp-match #px"\\w+|\\p{P}|\\p{L}|\\p{S}" in)
+  (match (regexp-try-match #px"^(\\w+|\\p{P}|\\p{L}|\\p{S})" in)
     [#f #f]
-    [(list text _ ...) (cons 'token (bytes->string/utf-8 text))]))
+    [(list text _ ...)
+     (~>> text bytes->string/utf-8 (cons 'token))]))
 
 (define (consume-whitespace in)
   (let ([ch (peek-char in)])
