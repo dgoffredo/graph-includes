@@ -2,7 +2,7 @@
 
 (define name "graph-includes")
 
-(define deps '("racket" "threading-lib"))
+(define deps '("racket" "threading-lib" "graph-lib"))
 
 (define raco-commands
   '(("graph-includes"                                  ; command
