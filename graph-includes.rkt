@@ -10,6 +10,7 @@
 
 (define (included-headers path)
   ; Return a list of the header file paths included by the specified file.
+  (displayln (~a "Examining file " path) (current-error-port))
   (let* ([in (open-input-file path)]
          [headers (~> in
                     minimal-lex

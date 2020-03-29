@@ -7,6 +7,9 @@
                  paths)     ; (list-of path?): files/directories of source code
         #:transparent)
 
+(define *default-extensions*
+  '("c" "cc" "cpp" "cxx" "C" "h" "hpp" "hxx"))
+
 (define (parse-options argv)
   (define extensions (make-parameter '()))
   (command-line
@@ -21,7 +24,7 @@
       ; extensions
       (for/list ([extension
                   (let ([exts (extensions)])
-                    (if (empty? exts) '("c" "cc" "cpp" "h" "hpp") exts))])
+                    (if (empty? exts) *default-extensions* exts))])
         (if (equal? (string-ref extension 0) #\.)
           (substring extension 1)
           extension))

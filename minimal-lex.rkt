@@ -16,6 +16,9 @@
   ;
   (pregexp (apply ~a args)))
 
+(define (string-token-from-bytes raw)
+  (~>> raw bytes->string/utf-8 (cons 'string)))
+
 (define (quoted-string-getter quote-char)
   ; Note on the regex: A quoted string begins with a quote and ends with a
   ; quote, and inside there are zero or more of either a character preceded by
@@ -24,16 +27,28 @@
     (lambda (in)
       (match (regexp-try-match regex in)
         [#f #f]
-        [(list _ inside)
-         (~>> inside bytes->string/utf-8 (cons 'string))]))))
+        [(list _ inside) (string-token-from-bytes inside)]))))
     
 (define get-single-quoted-string (quoted-string-getter #\'))
 
 (define get-double-quoted-string (quoted-string-getter #\"))
 
+; " stupid syntax highlighting
+
+(define (get-raw-string in)
+  ; C++11 raw strings look like R"something(...)something", where the
+  ; "something"s have to be the same, and the "..." can be anything
+  ; (including newlines and unescaped quotes).
+  ; We use Perl regex's backreference feature to make sure that the
+  ; "something"s are the same (that's the "\\1" in the pattern).
+  (match (regexp-try-match #px"^R\"([^\"(]+)\\((.*)\\)\\1\"" in)
+    [#f #f]
+    [(list _ _ inside) (string-token-from-bytes inside)]))
+
 (define (get-string in)
   (or (get-single-quoted-string in)
-      (get-double-quoted-string in)))
+      (get-double-quoted-string in)
+      (get-raw-string in)))
 
 (define (get-line-comment in)
   (and (equal? (peek-string 2 0 in) "//")
