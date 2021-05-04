@@ -3,8 +3,12 @@
 (provide (struct-out options)
          parse-options)
 
-(struct options (extensions ; (list-of string?): file extensions, sans period
-                 paths)     ; (list-of path?): files/directories of source code
+(require (prefix-in std-headers/ "standard-headers.rkt"))
+
+(struct options
+  (extensions ; (list-of string?): file extensions, sans period
+   exclusions ; (set-of string?): #include'd headers to omit from graph
+   paths) ; (list-of path?): files/directories of source code
         #:transparent)
 
 (define *default-extensions*
@@ -12,13 +16,24 @@
 
 (define (parse-options argv)
   (define extensions (make-parameter '()))
+  (define exclusions (make-parameter (set)))
   (command-line
     #:program "graph-includes"
     #:argv argv
     #:multi
-    [("-e" "--extension") EXTENSION 
+    [("--extension") EXTENSION 
                           "Consider files with the extension"
                          (extensions (cons EXTENSION (extensions)))]
+    [("--exclude") EXCLUSION
+                          "Omit header from graph output"
+                          (exclusions (set-add (exclusions) EXCLUSION))]
+    #:once-each
+    [("--exclude-std-c") "Omit standard C headers from graph output"
+            (exclusions (set-union (exclusions) std-headers/c))]
+    [("--exclude-std-cpp") "Omit standard C++ headers from graph output"
+            (exclusions (set-union (exclusions) std-headers/c++))]
+    [("--exclude-posix") "Omit POSIX standard headers from graph output"
+            (exclusions (set-union (exclusions) std-headers/posix))]
     #:args paths
     (options 
       ; extensions
@@ -28,5 +43,7 @@
         (if (equal? (string-ref extension 0) #\.)
           (substring extension 1)
           extension))
-      ;paths
+      ; exclusions
+      (exclusions)
+      ; paths
       paths)))

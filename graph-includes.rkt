@@ -55,7 +55,7 @@
           '()
           (cons (take lst amount) (loop (drop lst amount) (- len amount))))))))
 
-(define (digraph-from paths)
+(define (digraph-from paths exclusions)
   ; Return a directed inclusion graph from the specified list of file paths.
   ; An edge X -> Y in the graph indicates that the source file or header X
   ; includes the header Y.
@@ -69,10 +69,11 @@
       (split-into (min (processor-count) (length paths)))
       (map edge-worker)
       (append-map place-channel-get)
+      (filter (match-lambda [(list from to) (not (set-member? exclusions to))]))
       directed-graph)))
 
-(define (graphviz-from paths)
+(define (graphviz-from paths exclusions)
   ; Return a string containing a graphviz `dot` representation of the directed
   ; inclusion graph calculated by extracting #include directives from the
   ; specified files.
-  (graphviz (digraph-from paths)))
+  (graphviz (digraph-from paths exclusions)))

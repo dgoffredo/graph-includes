@@ -24,11 +24,11 @@
 
 (define (run args)
   (match (parse-options args)
-    [(options extensions paths)
+    [(options extensions exclusions paths)
      (let ([paths (if (empty? paths) (read-lines) paths)])
        (~> (path-patterns paths extensions)
          glob 
-         graphviz-from 
+         (graphviz-from exclusions)
          display))]))
 
 (module+ main
