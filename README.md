@@ -19,14 +19,18 @@ How
 ### Example Usage
 ```console
 $ git clone https://github.com/lua/lua
-$ raco graph-includes lua/ | dot -Tsvg -o examples/lua.svg
-$ firefox examples/lua.svg
+$ raco graph-includes --exclude-std-c lua/ | dot -Tsvg -o lua.svg
+$ firefox lua.svg &
 ```
 
 ### Install
 ```console
 $ raco pkg install
 ```
+
+You'll need an installation of [Racket][racket].  On Linux, it's best to use an
+installer script from their [downloads page][download].  I like the "Minimal
+Racket" flavor, because I don't use their IDE.
 
 More
 ----
@@ -39,3 +43,5 @@ Here's a rendering of a [smaller project][ipc]:
 
 [lua]: https://github.com/lua/lua
 [ipc]: https://github.com/dgoffredo/ipc
+[racket]: https://racket-lang.org/
+[download]: https://download.racket-lang.org/releases/
