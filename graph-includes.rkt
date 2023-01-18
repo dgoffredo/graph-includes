@@ -5,6 +5,7 @@
 
 (require "minimal-lex.rkt"
          "extract-includes.rkt"
+         "options.rkt"
          graph
          threading)
 
@@ -69,7 +70,7 @@
       (split-into (min (processor-count) (length paths)))
       (map edge-worker)
       (append-map place-channel-get)
-      (filter (match-lambda [(list from to) (not (set-member? exclusions to))]))
+      (filter (match-lambda [(list from to) (not (exclusion-set-member? exclusions to))]))
       directed-graph)))
 
 (define (graphviz-from paths exclusions)
